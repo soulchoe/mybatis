@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 
+	mapper태그에 namespace속성을 설정해야한다
+	namespace값은 session객체가 sql문을 메소드에 의해 실행할 때 사용하는 mapper 구분값이다 
+-->
+<mapper namespace="student">
+	<!-- 
+		실행할 sql구문에 맞는 태그를 선언하면 됨
+		<select>, <insert>, <update>, <delete>
+		sql문은 시작태그와 끝태그 사이에 작성, ;를 작성하지 않는다.
+	 -->
+	 <insert id="insertStudent">
+	 	INSERT INTO STUDENT VALUES(SEQ_STUDENT.NEXTVAL,'유병승','01012341234','YOO@YOO.COM','경기도 시흥시',DEFAULT)
+	 </insert>
+	 <!-- 새로만든 mapper는 config안에 추가해줘야 사용가능 -->
+	 
+	 
+	 <!-- 
+	 	메소드 실행시 매개변수가 있는 경우에는 SQL태그에 PARAMETERTYPE이라는 속성을 이용해 매개변수 타입을 설정한다.
+	 	파라미터 값은 #{매개변수명}로 전달받을 수 있다
+	 -->
+	 <insert id="insertStudentbyName" parameterType="string">
+	 	INSERT INTO STUDENT VALUES(SEQ_STUDENT.NEXTVAL,
+	 	#{name},'01012341234','YOO@YOO.COM','경기도 시흥시',DEFAULT)
+	<!-- 얘도 내부적으로는 PreparedStatement를 사용하는 거라 ?를 써준것과 같은 효과 -->
+	 </insert>
+	 
+	 
+	 <!-- type을 작성할 때 클래스를 쓰려면 패키지명 까지 작성해야한다 -->
+	 <insert id="insertStudentAll" parameterType="com.mybatis.model.vo.Student">
+	 	INSERT INTO STUDENT VALUES(SEQ_STUDENT.NEXTVAL, #{studentName},#{studentTel},#{studentEmail},#{studentAddress},DEFAULT)	
+	 </insert>
+	 
+	 <update id="updateStudent" parameterType="com.mybatis.model.vo.Student">
+	 	UPDATE STUDENT SET STUDENT_NAME=#{studentName},
+	 		STUDENT_TEL=#{studentTel},
+	 		STUDENT_EMAIL=#{studentEmail},
+	 		STUDENT_ADDR=#{studentAddress}
+	 	WHERE STUDENT_NO=#{studentNo}
+	 </update>
+	 
+	 <!-- delete와 count -->
+	 <delete id="deleteStudent" parameterType="_int">
+	 	DELETE FROM STUDENT WHERE STUDENT_NO=#{no}
+	 </delete>
+	 
+	 <select id="selectStudentCount" resultType="_int">
+	 	SELECT COUNT(*) FROM STUDENT
+	 </select>
+	
+	<!-- 
+		vo객체와 resultset의 컬럼명이 불일치 할 때 resultMap을 이용해서 맵핑시켜줄 수 있다 .
+		<resultMap id="구분" type=">
+		<id property="type에 설정된 객체의 필드명" column="resultSet컬럼명">
+		<result >
+		<association >
+		<collection >
+	-->
+	<resultMap type="com.mybatis.model.vo.Student" id="studentMap">
+		<id property="studentNo" column="student_no"/>
+		<result property="studentName" column="student_name"/>
+		<result property="studentTel" column="student_tel"/>
+		<result property="studentEmail" column="student_email"/>
+		<result property="studentAddress" column="student_addr"/>
+	</resultMap>
+	
+	<!-- resultType="com.mybatis.model.vo.Student" -->
+	<select id="selectStudent" resultMap="studentMap" parameterType="_int">
+	 <!-- 	SELECT 
+	 		STUDENT_NO AS STUDENTNO,
+	 		STUDENT_NAME AS STUDENTNAME,
+	 		STUDENT_TEL AS STUDENTTEL,
+	 		STUDENT_EMAIL AS STUDENTEMAIL,
+	 		STUDENT_ADDR AS STUDENTADDRESS,
+	 		REG_DATE -->
+	 	SELECT *
+	 	FROM STUDENT WHERE STUDENT_NO=#{no}
+	</select>
+	
+	<select id="selectStudentAll" resultMap="studentMap">
+		SELECT * FROM STUDENT
+	</select>
+	
+	<select id="selectStudentByName" resultMap="studentMap" parameterType="string">
+		SELECT * FROM STUDENT WHERE STUDENT_NAME LIKE '%'||#{keyword}||'%'
+	</select>
+	
+	<select id="selectCountWithKeyword" resultType="_int" parameterType="string">
+		SELECT COUNT(*) FROM STUDENT WHERE STUDENT_NAME LIKE '%'||#{keyword}||'%'
+	</select>
+	
+	<select id="selectStudentMap" resultType="map" parameterType="_int">
+		SELECT * FROM STUDENT WHERE STUDENT_NO=#{NO}
+	</select>
+	
+	<select id="selectStudentListMap" resultType="map">
+		SELECT * FROM STUDENT
+	</select>
+	
+	<select id="selectStudentPage" resultMap="studentMap">
+		<!-- SELECT * FROM (SELECT ROWNUM AS RNUM, ) 이거 이제 안해도 돼~@-->
+		SELECT * FROM STUDENT
+	</select>
+</mapper>
